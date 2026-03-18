@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KPI Dashboard - กลุ่มภารกิจด้านการพยาบาล รพ.ชลบุรี</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏥</text></svg>" />
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div id="login-page">
+  <div class="login-bg-circles">
+    <span></span><span></span><span></span>
+  </div>
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-logo-icon">🏥</div>
+      <div class="login-title">ระบบ KPI Dashboard</div>
+      <div class="login-subtitle">กลุ่มภารกิจด้านการพยาบาล โรงพยาบาลชลบุรี</div>
+    </div>
+
+    <div id="login-error" class="alert alert-danger d-none" style="border-radius:10px;font-size:0.875rem;padding:10px 14px;"></div>
+
+    <div class="form-group">
+      <label class="form-label">ชื่อผู้ใช้งาน / รหัสหน่วยงาน</label>
+      <div class="input-group">
+        <span class="input-group-icon"><i class="fa-solid fa-user"></i></span>
+        <input type="text" id="login-username" class="form-control" placeholder="กรอก Username หรือ Unit_ID" autocomplete="username" />
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">รหัสผ่าน</label>
+      <div class="input-group">
+        <span class="input-group-icon"><i class="fa-solid fa-lock"></i></span>
+        <input type="password" id="login-password" class="form-control" placeholder="กรอกรหัสผ่าน" autocomplete="current-password" />
+        <button type="button" onclick="togglePassword()" class="input-group-icon border-0" style="cursor:pointer;border-left:1px solid var(--border-light)!important;">
+          <i id="pw-eye" class="fa-solid fa-eye" style="color:var(--text-muted)"></i>
+        </button>
+      </div>
+    </div>
+
+    <button class="btn btn-primary w-100 btn-lg" id="login-btn" onclick="handleLogin()">
+      <i class="fa-solid fa-right-to-bracket"></i>
+      เข้าสู่ระบบ
+    </button>
+
+    <div class="text-center mt-3" style="font-size:0.78rem;color:var(--text-muted);">
+      v2.5.0 &nbsp;|&nbsp; พัฒนาโดย พว.วิษณุกรณ์ โอยา รพ.ชลบุรี
+    </div>
+  </div>
+</div>
+
+<div id="app-shell">
+  <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+  <aside id="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-brand">
+        <div class="sidebar-brand-icon">🏥</div>
+        <div class="sidebar-brand-text">
+          <div class="sidebar-brand-name">KPI Dashboard</div>
+          <div class="sidebar-brand-sub">กลุ่มภารกิจด้านการพยาบาล รพ.ชลบุรี</div>
+        </div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div id="nav-nso-section" class="d-none">
+        <div class="nav-section-label">ภาพรวม</div>
+        <button class="nav-item active" onclick="navigate('dashboard')">
+          <span class="nav-icon"><i class="fa-solid fa-chart-line"></i></span>
+          Dashboard
+        </button>
+      </div>
+
+      <div id="nav-head-section" class="d-none">
+        <div class="nav-section-label">กลุ่มงานของฉัน</div>
+        <button class="nav-item" onclick="navigate('dashboard')">
+          <span class="nav-icon"><i class="fa-solid fa-chart-line"></i></span>
+          Dashboard กลุ่มงาน
+        </button>
+        <div class="nav-section-label">บันทึกข้อมูล</div>
+        <button class="nav-item" onclick="navigate('entry')">
+          <span class="nav-icon"><i class="fa-solid fa-keyboard"></i></span>
+          บันทึก KPI รายเดือน
+        </button>
+      </div>
+
+      <div id="nav-spec-section" class="d-none">
+        <div class="nav-section-label">หน่วยงานของฉัน</div>
+        <button class="nav-item" onclick="navigate('myreport')">
+          <span class="nav-icon"><i class="fa-solid fa-chart-pie"></i></span>
+          Dashboard หน่วยงาน
+        </button>
+        <div class="nav-section-label">บันทึกข้อมูล</div>
+        <button class="nav-item" onclick="navigate('entry')">
+          <span class="nav-icon"><i class="fa-solid fa-keyboard"></i></span>
+          บันทึก KPI รายเดือน
+        </button>
+      </div>
+
+      <div id="nav-user-section" class="d-none">
+        <div class="nav-section-label">หน่วยงานของฉัน</div>
+        <button class="nav-item" onclick="navigate('myreport')">
+          <span class="nav-icon"><i class="fa-solid fa-chart-pie"></i></span>
+          Dashboard หน่วยงาน
+        </button>
+        <div class="nav-section-label">บันทึกข้อมูล</div>
+        <button class="nav-item" onclick="navigate('entry')">
+          <span class="nav-icon"><i class="fa-solid fa-keyboard"></i></span>
+          บันทึก KPI รายเดือน
+        </button>
+      </div>
+
+      <div id="nav-admin-section" class="d-none">
+        <div class="nav-section-label">ข้อมูลและรายงาน</div>
+        <button class="nav-item" onclick="navigate('dashboard')">
+          <span class="nav-icon"><i class="fa-solid fa-chart-line"></i></span>
+          Dashboard
+        </button>
+        <button class="nav-item" onclick="navigate('entry')">
+          <span class="nav-icon"><i class="fa-solid fa-keyboard"></i></span>
+          บันทึก KPI
+        </button>
+        <div class="nav-section-label">จัดการระบบ</div>
+        <button class="nav-item" onclick="navigate('admin')">
+          <span class="nav-icon"><i class="fa-solid fa-gear"></i></span>
+          Admin Panel
+        </button>
+        <button class="nav-item" onclick="navigate('audit')">
+          <span class="nav-icon"><i class="fa-solid fa-clock-rotate-left"></i></span>
+          Audit Trail
+        </button>
+        <button class="nav-item" onclick="runApiDiagnostic()" style="color:rgba(255,255,255,0.5);font-size:0.78rem;">
+          <span class="nav-icon"><i class="fa-solid fa-bug"></i></span>
+          API Diagnostic
+        </button>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name" id="sidebar-username">-</div>
+        <div class="sidebar-user-unit" id="sidebar-unitname">-</div>
+        <span class="sidebar-user-role" id="sidebar-role">-</span>
+      </div>
+      <div class="sidebar-actions">
+        <button class="sidebar-action-btn" onclick="openChangePassword()">
+          <i class="fa-solid fa-key"></i> เปลี่ยนรหัสผ่าน
+        </button>
+        <button class="sidebar-action-btn danger" onclick="handleLogout()">
+          <i class="fa-solid fa-right-from-bracket"></i> ออกจากระบบ
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <header id="topbar">
+    <button class="topbar-toggle" onclick="toggleSidebar()">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+
+    <div class="topbar-unit-badge" id="topbar-unit-badge">
+      <span class="badge-icon">🏢</span>
+      <span id="topbar-unit-text">กำลังโหลด...</span>
+    </div>
+
+    <span class="topbar-page-title" id="topbar-page-title"></span>
+
+    <div class="topbar-spacer"></div>
+
+    <div class="topbar-actions">
+      <div style="font-size:0.78rem;color:var(--text-muted);text-align:right;line-height:1.3;">
+        <div id="topbar-datetime" style="font-weight:600;color:var(--text-secondary);"></div>
+      </div>
+    </div>
+  </header>
+
+  <main id="main-content">
+
+    <div id="page-dashboard" class="page-view d-none">
+      <div class="page-header">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+          <div>
+            <div class="page-header-title">📊 Dashboard ภาพรวม KPI</div>
+            <div class="page-header-sub" id="dash-subtitle">ข้อมูลตัวชี้วัดคุณภาพการพยาบาล</div>
+          </div>
+          <div class="d-flex gap-2 flex-wrap">
+            <button class="btn btn-outline btn-sm" onclick="exportDashboardData()">
+              <i class="fa-solid fa-download"></i> Export Excel
+            </button>
+            <button class="btn btn-primary btn-sm" onclick="loadDashboard()">
+              <i class="fa-solid fa-rotate"></i> รีเฟรช
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div id="dash-filter-bar" class="mb-4">
+        <div class="filter-bar" style="flex-wrap:wrap;gap:10px;align-items:flex-end;">
+
+          <div id="dash-org-filters" class="d-flex align-items-center gap-2 flex-wrap" style="display:none;">
+            <div style="font-size:0.82rem;font-weight:700;color:var(--text-secondary);white-space:nowrap;">
+              <i class="fa-solid fa-sitemap" style="color:var(--primary)"></i> องค์กร:
+            </div>
+            <div class="d-flex align-items-center gap-1">
+              <label class="filter-label">กลุ่มงาน</label>
+              <select id="dash-group-filter" class="form-control form-select filter-select" onchange="onGroupFilterChange('dash')">
+                <option value="">— ทั้งกลุ่มงาน —</option>
+              </select>
+            </div>
+            <div class="d-flex align-items-center gap-1">
+              <label class="filter-label">หน่วยงาน</label>
+              <select id="dash-unit-filter" class="form-control form-select filter-select" onchange="loadDashboard()">
+                <option value="">— ทั้งหน่วยงาน —</option>
+              </select>
+            </div>
+            <div class="filter-divider"></div>
+          </div>
+
+          <div class="d-flex align-items-center gap-2 flex-wrap">
+            <div style="font-size:0.82rem;font-weight:700;color:var(--text-secondary);white-space:nowrap;">
+              <i class="fa-solid fa-calendar-days" style="color:var(--primary)"></i> ช่วงเวลา:
+            </div>
+            <div class="d-flex align-items-center gap-1">
+              <label class="filter-label">ปี พ.ศ.</label>
+              <select id="dash-year-filter" class="form-control form-select filter-select" style="min-width:120px;" onchange="loadDashboard()"></select>
+            </div>
+            <div class="d-flex align-items-center gap-1">
+              <label class="filter-label">เดือน</label>
+              <select id="dash-month-filter" class="form-control form-select filter-select" style="min-width:130px;" onchange="loadDashboard()"></select>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="loadDashboard()">
+              <i class="fa-solid fa-rotate"></i> โหลด
+            </button>
+          </div>
+
+          <div id="dash-active-chips" class="d-flex gap-2 flex-wrap align-items-center" style="margin-left:auto;"></div>
+        </div>
+      </div>
+
+      <div class="row g-3 mb-4" id="dash-stat-cards">
+        <div class="col-12 col-sm-6 col-xl-3">
+          <div class="kpi-stat-card">
+            <div class="kpi-stat-icon mint"><i class="fa-solid fa-list-check"></i></div>
+            <div class="kpi-stat-content">
+              <div class="kpi-stat-label">KPI ทั้งหมด</div>
+              <div class="kpi-stat-value" id="stat-total">-</div>
+              <div class="kpi-stat-meta">ตัวชี้วัดที่ใช้งาน</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-sm-6 col-xl-3">
+          <div class="kpi-stat-card">
+            <div class="kpi-stat-icon green"><i class="fa-solid fa-circle-check"></i></div>
+            <div class="kpi-stat-content">
+              <div class="kpi-stat-label">ผ่านเกณฑ์</div>
+              <div class="kpi-stat-value" id="stat-pass">-</div>
+              <div class="kpi-stat-meta">KPI ที่บรรลุเป้าหมาย</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-sm-6 col-xl-3">
+          <div class="kpi-stat-card">
+            <div class="kpi-stat-icon red"><i class="fa-solid fa-circle-xmark"></i></div>
+            <div class="kpi-stat-content">
+              <div class="kpi-stat-label">ไม่ผ่านเกณฑ์</div>
+              <div class="kpi-stat-value" id="stat-fail">-</div>
+              <div class="kpi-stat-meta">ต้องพัฒนาปรับปรุง</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-sm-6 col-xl-3">
+          <div class="kpi-stat-card">
+            <div class="kpi-stat-icon amber"><i class="fa-solid fa-hourglass-half"></i></div>
+            <div class="kpi-stat-content">
+              <div class="kpi-stat-label">ยังไม่บันทึก</div>
+              <div class="kpi-stat-value" id="stat-pending">-</div>
+              <div class="kpi-stat-meta">รอการบันทึกข้อมูล</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mb-4">
+        <div class="card-header-custom" style="flex-wrap:wrap;gap:10px;">
+          <div class="card-title">
+            <div class="card-icon"><i class="fa-solid fa-chart-column"></i></div>
+            รายงาน KPI
+          </div>
+          <div class="kpi-view-toggle" id="dash-view-toggle">
+            <button class="kpi-view-btn active" id="dash-view-btn-table" onclick="switchDashView('table')" title="ตาราง">
+              <i class="fa-solid fa-table-list"></i>
+              <span>ตาราง</span>
+            </button>
+            <button class="kpi-view-btn" id="dash-view-btn-bar" onclick="switchDashView('bar')" title="กราฟแท่ง">
+              <i class="fa-solid fa-chart-bar"></i>
+              <span>แท่ง</span>
+            </button>
+            <button class="kpi-view-btn" id="dash-view-btn-line" onclick="switchDashView('line')" title="กราฟเส้น">
+              <i class="fa-solid fa-chart-line"></i>
+              <span>เส้น</span>
+            </button>
+          </div>
+          <span id="dash-month-label" style="font-size:0.82rem;color:var(--text-muted);"></span>
+        </div>
+
+        <div id="dash-view-table" class="card-body-custom p-0">
+          <div class="table-container" style="border:none;border-radius:0 0 var(--radius-lg) var(--radius-lg);">
+            <table class="data-table" id="dash-kpi-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>ตัวชี้วัด (KPI)</th>
+                  <th>หมวดหมู่</th>
+                  <th>เป้าหมาย</th>
+                  <th>ผลลัพธ์ล่าสุด</th>
+                  <th>เดือน</th>
+                  <th>สถานะ</th>
+                </tr>
+              </thead>
+              <tbody id="dash-kpi-tbody">
+                <tr><td colspan="7" class="text-center py-4"><div class="spinner"></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div id="dash-view-bar" class="card-body-custom d-none">
+          <div class="d-flex align-items-center justify-content-between mb-3" style="flex-wrap:wrap;gap:8px;">
+            <div style="font-size:0.82rem;color:var(--text-secondary);">
+              แสดงผลลัพธ์ KPI เทียบกับเป้าหมาย — <span id="dash-bar-label"></span>
+            </div>
+            <select id="dash-bar-kpi-select" class="form-control form-select" style="width:auto;font-size:0.82rem;" onchange="updateBarChart()"></select>
+          </div>
+          <div class="chart-wrapper" style="height:360px;">
+            <canvas id="dash-bar-chart"></canvas>
+          </div>
+          <div id="dash-bar-all" class="mt-4" style="display:none;"></div>
+        </div>
+
+        <div id="dash-view-line" class="card-body-custom d-none">
+          <div class="d-flex align-items-center justify-content-between mb-3" style="flex-wrap:wrap;gap:8px;">
+            <div style="font-size:0.82rem;color:var(--text-secondary);">
+              แนวโน้ม KPI รายเดือน — ย้อนหลัง 12 เดือน
+            </div>
+            <select id="dash-line-kpi-select" class="form-control form-select" style="width:auto;font-size:0.82rem;" onchange="updateLineChart()"></select>
+          </div>
+          <div class="chart-wrapper" style="height:360px;">
+            <canvas id="dash-line-chart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-3">
+        <div class="col-12 col-xl-4">
+          <div class="card">
+            <div class="card-header-custom">
+              <div class="card-title">
+                <div class="card-icon"><i class="fa-solid fa-chart-pie"></i></div>
+                สัดส่วนผล KPI
+              </div>
+            </div>
+            <div class="card-body-custom">
+              <div class="chart-wrapper" style="height:280px;">
+                <canvas id="pie-chart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-xl-8">
+          <div class="card">
+            <div class="card-header-custom">
+              <div class="card-title">
+                <div class="card-icon"><i class="fa-solid fa-bars-progress"></i></div>
+                ความคืบหน้าแต่ละ KPI
+              </div>
+            </div>
+            <div class="card-body-custom" id="dash-progress-bars" style="max-height:310px;overflow-y:auto;">
+              <div class="empty-state" style="padding:40px 0"><div class="empty-state-icon">📊</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="page-entry" class="page-view d-none">
+      <div class="page-header">
+        <div class="page-header-title">📝 บันทึก KPI รายเดือน</div>
+        <div class="page-header-sub">กรอกผลลัพธ์ตัวชี้วัดคุณภาพประจำเดือน</div>
+      </div>
+
+      <div class="card mb-4">
+        <div class="card-header-custom">
+          <div class="card-title">
+            <div class="card-icon"><i class="fa-solid fa-sliders"></i></div>
+            เลือกหน่วยงานและเดือน
+          </div>
+        </div>
+        <div class="card-body-custom">
+          <div class="row g-3">
+            <div class="col-12 col-md-5" id="entry-group-col">
+              <label class="form-label">กลุ่มงาน</label>
+              <select id="entry-group-select" class="form-control form-select" onchange="onGroupFilterChange('entry')">
+                <option value="">— เลือกกลุ่มงาน —</option>
+              </select>
+            </div>
+            <div class="col-12 col-md-5" id="entry-unit-col">
+              <label class="form-label">หน่วยงาน <span class="required">*</span></label>
+              <select id="entry-unit-select" class="form-control form-select" onchange="onEntryUnitChange()">
+                <option value="">— เลือกหน่วยงาน —</option>
+              </select>
+            </div>
+            <div class="col-12 col-md-4">
+              <label class="form-label">เดือน / ปี <span class="required">*</span></label>
+              <div class="month-nav">
+                <button class="month-nav-btn" onclick="changeMonth(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+                <div class="month-display" id="entry-month-display">-</div>
+                <button class="month-nav-btn" onclick="changeMonth(1)"><i class="fa-solid fa-chevron-right"></i></button>
+              </div>
+            </div>
+            <div class="col-12 d-flex align-items-end">
+              <button class="btn btn-primary" onclick="loadBatchEntryData()">
+                <i class="fa-solid fa-magnifying-glass"></i> โหลดข้อมูล KPI
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="batch-table-section" class="d-none">
+        <div class="card">
+          <div class="card-header-custom">
+            <div class="card-title">
+              <div class="card-icon"><i class="fa-solid fa-table"></i></div>
+              ตาราง KPI &nbsp;<span id="batch-unit-label" style="font-weight:400;color:var(--text-secondary);"></span>
+            </div>
+            <span id="batch-month-label" style="font-size:0.85rem;font-weight:700;color:var(--primary);"></span>
+          </div>
+
+          <div class="card-body-custom p-0">
+            <div class="table-container" style="border:none;border-radius:0;">
+              <table class="batch-table" id="batch-entry-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>ตัวชี้วัด KPI</th>
+                    <th>เป้าหมาย</th>
+                    <th>ตัวเศษ (Numerator)</th>
+                    <th>ตัวส่วน (Denominator)</th>
+                    <th>ผลลัพธ์</th>
+                    <th>สูตร</th>
+                    <th>สถานะ</th>
+                  </tr>
+                </thead>
+                <tbody id="batch-entry-tbody">
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="batch-action-bar">
+          <div class="batch-summary">
+            <strong id="batch-filled-count">0</strong> / <strong id="batch-total-count">0</strong> ตัวชี้วัด &nbsp;|&nbsp;
+            อัปเดตล่าสุด: <strong id="batch-last-update">-</strong>
+          </div>
+          <div class="d-flex gap-2">
+            <button class="btn btn-outline" onclick="clearBatchForm()">
+              <i class="fa-solid fa-rotate-left"></i> ล้างข้อมูล
+            </button>
+            <button class="btn btn-success" onclick="saveBatchAll()" id="batch-save-btn">
+              <i class="fa-solid fa-floppy-disk"></i> บันทึกทั้งหมด (Save All)
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="page-admin" class="page-view d-none">
+      <div class="page-header">
+        <div class="page-header-title">⚙️ Admin Panel — God Mode</div>
+        <div class="page-header-sub">จัดการระบบทั้งหมด: ผู้ใช้, หน่วยงาน, ตัวชี้วัด</div>
+      </div>
+
+      <div class="admin-tabs mb-4" id="admin-tabs">
+        <button class="admin-tab active" onclick="switchAdminTab('users')">
+          <i class="fa-solid fa-users"></i> จัดการผู้ใช้
+        </button>
+        <button class="admin-tab" onclick="switchAdminTab('units')">
+          <i class="fa-solid fa-sitemap"></i> โครงสร้างองค์กร
+        </button>
+        <button class="admin-tab" onclick="switchAdminTab('kpis')">
+          <i class="fa-solid fa-chart-bar"></i> KPI Master
+        </button>
+      </div>
+
+      <div id="admin-tab-users" class="admin-tab-content">
+        <div class="card">
+          <div class="card-header-custom">
+            <div class="card-title">
+              <div class="card-icon"><i class="fa-solid fa-user-gear"></i></div>
+              รายชื่อผู้ใช้งาน
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="openUserModal()">
+              <i class="fa-solid fa-plus"></i> เพิ่มผู้ใช้
+            </button>
+          </div>
+          <div class="card-body-custom p-0">
+            <div class="table-container" style="border:none;">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>User ID</th>
+                    <th>Username</th>
+                    <th>Role</th>
+                    <th>หน่วยงาน</th>
+                    <th>วันที่สร้าง</th>
+                    <th>จัดการ</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-users-tbody">
+                  <tr><td colspan="6" class="text-center py-4"><div class="spinner"></div></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="admin-tab-units" class="admin-tab-content d-none">
+        <div class="card">
+          <div class="card-header-custom">
+            <div class="card-title">
+              <div class="card-icon"><i class="fa-solid fa-building"></i></div>
+              โครงสร้างองค์กร (กลุ่มงาน / หน่วยงาน)
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="openUnitModal()">
+              <i class="fa-solid fa-plus"></i> เพิ่มหน่วยงาน
+            </button>
+          </div>
+          <div class="card-body-custom p-0">
+            <div class="table-container" style="border:none;">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Group_ID</th>
+                    <th>ชื่อกลุ่มงาน</th>
+                    <th>Unit_ID</th>
+                    <th>ชื่อหน่วยงาน</th>
+                    <th>จัดการ</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-units-tbody">
+                  <tr><td colspan="5" class="text-center py-4"><div class="spinner"></div></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="admin-tab-kpis" class="admin-tab-content d-none">
+        <div class="card">
+          <div class="card-header-custom">
+            <div class="card-title">
+              <div class="card-icon"><i class="fa-solid fa-clipboard-list"></i></div>
+              ตัวชี้วัดคุณภาพ (KPI Master)
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="openKPIModal()">
+              <i class="fa-solid fa-plus"></i> เพิ่ม KPI
+            </button>
+          </div>
+          <div class="card-body-custom p-0">
+            <div class="table-container" style="border:none;">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>KPI_ID</th>
+                    <th>ชื่อตัวชี้วัด</th>
+                    <th>หมวดหมู่</th>
+                    <th>หน่วยงาน</th>
+                    <th>เป้าหมาย</th>
+                    <th>สูตร</th>
+                    <th>สถานะ</th>
+                    <th>จัดการ</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-kpis-tbody">
+                  <tr><td colspan="8" class="text-center py-4"><div class="spinner"></div></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="page-myreport" class="page-view d-none">
+      <div class="filter-bar mb-4" style="flex-wrap:wrap;gap:10px;align-items:flex-end;">
+        <div style="font-size:0.84rem;font-weight:700;color:var(--text-secondary);white-space:nowrap;">
+          <i class="fa-solid fa-calendar-days" style="color:var(--primary)"></i> ช่วงเวลา:
+        </div>
+        <div class="d-flex align-items-center gap-1">
+          <label class="filter-label">ปี พ.ศ.</label>
+          <select id="ward-year-sel" class="form-control form-select filter-select" style="min-width:120px;" onchange="onWardTimeChange()"></select>
+        </div>
+        <div class="d-flex align-items-center gap-1">
+          <label class="filter-label">เดือน</label>
+          <select id="ward-month-sel" class="form-control form-select filter-select" style="min-width:135px;" onchange="onWardTimeChange()"></select>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="onWardTimeChange()">
+          <i class="fa-solid fa-rotate"></i> โหลดข้อมูล
+        </button>
+        <div id="ward-time-label" class="filter-active-chip" style="display:none;"></div>
+      </div>
+      <div class="kpi-view-toggle mb-3" id="ward-view-toggle" style="display:none;">
+        <button class="kpi-view-btn active" id="ward-view-btn-table" onclick="switchWardView('table')">
+          <i class="fa-solid fa-table-list"></i><span>ตาราง</span>
+        </button>
+        <button class="kpi-view-btn" id="ward-view-btn-bar" onclick="switchWardView('bar')">
+          <i class="fa-solid fa-chart-bar"></i><span>แท่ง</span>
+        </button>
+        <button class="kpi-view-btn" id="ward-view-btn-line" onclick="switchWardView('line')">
+          <i class="fa-solid fa-chart-line"></i><span>เส้น</span>
+        </button>
+      </div>
+      <div id="ward-dashboard-root"></div>
+      <div id="ward-history-section" style="margin-top:28px;"></div>
+    </div>
+
+    <div id="page-audit" class="page-view d-none">
+      <div class="page-header">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+          <div>
+            <div class="page-header-title">🕐 Audit Trail</div>
+            <div class="page-header-sub">ประวัติการใช้งานระบบทั้งหมด</div>
+          </div>
+          <div class="d-flex gap-2">
+            <button class="btn btn-outline btn-sm" onclick="exportAuditLog()">
+              <i class="fa-solid fa-download"></i> Export CSV
+            </button>
+            <button class="btn btn-primary btn-sm" onclick="loadAuditLog()">
+              <i class="fa-solid fa-rotate"></i> รีเฟรช
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="filter-bar mb-4" style="flex-wrap:wrap;gap:10px;">
+        <div style="font-size:.84rem;font-weight:700;color:var(--text-secondary);">
+          <i class="fa-solid fa-filter" style="color:var(--primary)"></i> ตัวกรอง:
+        </div>
+        <div class="d-flex align-items-center gap-1">
+          <label class="filter-label">Action</label>
+          <select id="audit-filter-action" class="form-control form-select filter-select" style="min-width:150px;" onchange="loadAuditLog()">
+            <option value="">— ทั้งหมด —</option>
+          </select>
+        </div>
+        <div class="d-flex align-items-center gap-1">
+          <label class="filter-label">ตาราง</label>
+          <select id="audit-filter-table" class="form-control form-select filter-select" style="min-width:160px;" onchange="loadAuditLog()">
+            <option value="">— ทั้งหมด —</option>
+          </select>
+        </div>
+        <div class="d-flex align-items-center gap-1">
+          <label class="filter-label">ผู้ใช้</label>
+          <select id="audit-filter-user" class="form-control form-select filter-select" style="min-width:150px;" onchange="loadAuditLog()">
+            <option value="">— ทั้งหมด —</option>
+          </select>
+        </div>
+        <div class="d-flex align-items-center gap-1">
+          <label class="filter-label">แสดง</label>
+          <select id="audit-limit" class="form-control form-select filter-select" style="min-width:100px;" onchange="loadAuditLog()">
+            <option value="50">50 รายการ</option>
+            <option value="100" selected>100 รายการ</option>
+            <option value="200">200 รายการ</option>
+            <option value="500">500 รายการ</option>
+          </select>
+        </div>
+        <div id="audit-total-label" style="font-size:.82rem;color:var(--text-muted);margin-left:auto;align-self:center;"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-body-custom p-0">
+          <div class="table-container" style="border:none;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>เวลา</th>
+                  <th>ผู้ใช้งาน</th>
+                  <th>Action</th>
+                  <th>ตาราง</th>
+                  <th>Record ID</th>
+                </tr>
+              </thead>
+              <tbody id="audit-tbody">
+                <tr><td colspan="6" class="text-center py-5">
+                  <div class="empty-state-icon">🔍</div>
+                  <div style="color:var(--text-muted);font-size:.88rem;margin-top:8px;">กดปุ่ม "รีเฟรช" เพื่อโหลดข้อมูล</div>
+                </td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div><div class="modal-overlay" id="modal-change-pw">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title"><i class="fa-solid fa-key" style="color:var(--primary)"></i>&nbsp; เปลี่ยนรหัสผ่าน</div>
+      <button class="modal-close" onclick="closeModal('modal-change-pw')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">รหัสผ่านเดิม <span class="required">*</span></label>
+        <input type="password" id="cpw-old" class="form-control" placeholder="กรอกรหัสผ่านเดิม" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">รหัสผ่านใหม่ <span class="required">*</span></label>
+        <input type="password" id="cpw-new" class="form-control" placeholder="รหัสผ่านใหม่ (อย่างน้อย 8 ตัวอักษร)" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">ยืนยันรหัสผ่านใหม่ <span class="required">*</span></label>
+        <input type="password" id="cpw-confirm" class="form-control" placeholder="กรอกรหัสผ่านใหม่อีกครั้ง" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-change-pw')">ยกเลิก</button>
+      <button class="btn btn-primary" onclick="submitChangePassword()">
+        <i class="fa-solid fa-floppy-disk"></i> บันทึก
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-user">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-user-title">เพิ่มผู้ใช้งาน</div>
+      <button class="modal-close" onclick="closeModal('modal-user')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="user-edit-id" />
+      <div class="row g-3">
+        <div class="col-12 col-md-6">
+          <div class="form-group">
+            <label class="form-label">Username <span class="required">*</span></label>
+            <input type="text" id="user-username" class="form-control" placeholder="กรอก Username" />
+          </div>
+        </div>
+        <div class="col-12 col-md-6">
+          <div class="form-group">
+            <label class="form-label">Role <span class="required">*</span></label>
+            <select id="user-role" class="form-control form-select">
+              <option value="User">User (วอร์ด)</option>
+              <option value="Head">Head (หัวหน้ากลุ่มงาน)</option>
+              <option value="Spec">Spec (เฉพาะ KPI ตัวเอง)</option>
+              <option value="NSO">NSO (ผู้บริหาร)</option>
+              <option value="Admin">Admin</option>
+            </select>
+          </div>
+        </div>
+        <div class="col-12">
+          <div class="form-group">
+            <label class="form-label">หน่วยงาน (Unit_ID)</label>
+            <select id="user-unit" class="form-control form-select">
+              <option value="">— เลือกหน่วยงาน —</option>
+            </select>
+          </div>
+        </div>
+        <div class="col-12" id="user-pw-section">
+          <div class="form-group">
+            <label class="form-label">รหัสผ่านเริ่มต้น</label>
+            <input type="text" id="user-password" class="form-control" placeholder="default: Password1234" value="Password1234" />
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-user')">ยกเลิก</button>
+      <button class="btn btn-primary" onclick="submitUserForm()">
+        <i class="fa-solid fa-floppy-disk"></i> บันทึก
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-unit">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-unit-title">เพิ่มหน่วยงาน</div>
+      <button class="modal-close" onclick="closeModal('modal-unit')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="unit-edit-id" />
+      <div class="row g-3">
+        <div class="col-12 col-md-6">
+          <div class="form-group">
+            <label class="form-label">Group_ID <span class="required">*</span></label>
+            <input type="text" id="unit-group-id" class="form-control" placeholder="เช่น GRP01" />
+          </div>
+        </div>
+        <div class="col-12 col-md-6">
+          <div class="form-group">
+            <label class="form-label">ชื่อกลุ่มงาน <span class="required">*</span></label>
+            <input type="text" id="unit-group-name" class="form-control" placeholder="เช่น กลุ่มงานการพยาบาลผู้ป่วยใน" />
+          </div>
+        </div>
+        <div class="col-12 col-md-6">
+          <div class="form-group">
+            <label class="form-label">Unit_ID <span class="required">*</span></label>
+            <input type="text" id="unit-unit-id" class="form-control" placeholder="เช่น WARD01" />
+          </div>
+        </div>
+        <div class="col-12 col-md-6">
+          <div class="form-group">
+            <label class="form-label">ชื่อหน่วยงาน <span class="required">*</span></label>
+            <input type="text" id="unit-unit-name" class="form-control" placeholder="เช่น หอผู้ป่วยเคมีบำบัด" />
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-unit')">ยกเลิก</button>
+      <button class="btn btn-primary" onclick="submitUnitForm()">
+        <i class="fa-solid fa-floppy-disk"></i> บันทึก
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-kpi">
+  <div class="modal-box modal-lg">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-kpi-title">เพิ่มตัวชี้วัด KPI</div>
+      <button class="modal-close" onclick="closeModal('modal-kpi')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="kpi-edit-id" />
+      <div class="row g-3">
+        <div class="col-12">
+          <div class="form-group">
+            <label class="form-label">ชื่อตัวชี้วัด <span class="required">*</span></label>
+            <input type="text" id="kpi-name" class="form-control" placeholder="เช่น อัตราการพลัดตกหกล้มในหอผู้ป่วย" />
+          </div>
+        </div>
+        <div class="col-12 col-md-6">
+          <div class="form-group">
+            <label class="form-label">หมวดหมู่</label>
+            <input type="text" id="kpi-category" class="form-control" placeholder="เช่น ความปลอดภัยผู้ป่วย" />
+          </div>
+        </div>
+        <div class="col-12 col-md-6">
+          <div class="form-group">
+            <label class="form-label">หน่วยงานรับผิดชอบ</label>
+            <select id="kpi-unit" class="form-control form-select">
+              <option value="">— เลือกหน่วยงาน/กลุ่มงาน —</option>
+            </select>
+          </div>
+        </div>
+        <div class="col-12 col-md-6">
+          <div class="form-group">
+            <label class="form-label">เป้าหมาย (Target) <span class="required">*</span></label>
+            <input type="text" id="kpi-target" class="form-control" placeholder="เช่น ≥80, <5, =100" />
+            <small style="color:var(--text-muted);font-size:0.75rem;">พิมพ์: ≥, ≤, >, <, = ตามด้วยตัวเลข</small>
+          </div>
+        </div>
+        <div class="col-12 col-md-6">
+          <div class="form-group">
+            <label class="form-label">สูตรการคำนวณ <span class="required">*</span></label>
+            <select id="kpi-calc-type" class="form-control form-select">
+              <option value="x100">x100 (ร้อยละ = เศษ/ส่วน × 100)</option>
+              <option value="x1000">x1000 (อัตรา = เศษ/ส่วน × 1000)</option>
+              <option value="จำนวนครั้ง">จำนวนครั้ง (กรอกผลลัพธ์โดยตรง)</option>
+            </select>
+          </div>
+        </div>
+        <div class="col-12 col-md-6">
+          <div class="form-group">
+            <label class="form-label">สถานะ</label>
+            <select id="kpi-status" class="form-control form-select">
+              <option value="Active">Active (ใช้งาน)</option>
+              <option value="Inactive">Inactive (ปิดใช้งาน)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-kpi')">ยกเลิก</button>
+      <button class="btn btn-primary" onclick="submitKPIForm()">
+        <i class="fa-solid fa-floppy-disk"></i> บันทึก
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-confirm">
+  <div class="modal-box" style="max-width:380px;">
+    <div class="modal-header">
+      <div class="modal-title" style="color:var(--danger)">
+        <i class="fa-solid fa-triangle-exclamation"></i>&nbsp; ยืนยันการลบ
+      </div>
+      <button class="modal-close" onclick="closeModal('modal-confirm')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <p id="confirm-message" style="color:var(--text-secondary);"></p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-confirm')">ยกเลิก</button>
+      <button class="btn btn-danger" id="confirm-ok-btn">
+        <i class="fa-solid fa-trash"></i> ยืนยันลบ
+      </button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
